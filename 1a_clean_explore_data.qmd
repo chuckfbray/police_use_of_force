@@ -1,0 +1,46 @@
+---
+title: "Police use of force"
+format: pdf
+editor: visual
+---
+
+## Project description
+
+intro intro intro.
+
+## Importing from Google Sheets
+
+```{r, echo=FALSE}
+# install.packages("googlesheets4")
+# install.packages("summarytools")
+
+# load key libraries
+library(magrittr)
+library(googlesheets4)
+library(summarytools)
+
+# import data from Google Sheet (make sure default browser has Google account logged in)
+funeraldat <-
+  googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
+                            range="A2:O28")
+
+# redefine binary variables as character factors; drop uninformative variables
+funeraldat %<>% mutate(Inadvertent = factor(ifelse(Inadverdant==0,"No","Yes"))) %>%
+  select(-`Large police funeral?`)
+
+```
+
+## Exploratory figures
+
+```{r, echo=FALSE}
+
+summarytools::descr(funeraldat)
+
+```
+
+## Regression models
+
+```{r, echo=FALSE}
+
+
+```
