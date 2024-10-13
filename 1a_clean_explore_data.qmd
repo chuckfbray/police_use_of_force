@@ -8,7 +8,7 @@ editor: visual
 
 intro intro intro.
 
-## Importing from Google Sheets and cleanign relevant variables
+## Importing from Google Sheets and cleaning relevant variables
 
 ```{r, echo=FALSE}
 # install.packages("googlesheets4")
@@ -36,89 +36,110 @@ funeraldat %<>%
   select(-`Large police funeral?`)
 
 
-### import UOF datasets
-phx_UOF <-
-  googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
-                            sheet="Phoenix_UOF_data")
-
-Indianapolis_UOF <-
-  googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
-                            sheet="Indianapolis_UOF_data")
-
-Minneapolis_UOF <-
-  googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
-                            sheet="Minneapolis_UOF_Data")
-
-Seattle_UOF <-
-  googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
-                            sheet="Seattle_UOF")
-
-Chicago_UOF <-
-  googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
-                            sheet="Chicago-UOF-2023")
-
-NOPD_UOF <-
-  googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
-                            sheet="NOPD_Use_of_Force_Incidents")
-
-
-Austin_UOF <-
-    googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/14Rl9E8Nn5kj_ZYtN_Gh628JF-4eISpPBoR_FS_rVqOY/edit?gid=1964476816#gid=1964476816")
-
-Chicago_UOF <-
-    googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1bRyuIZbj3FRGMIS8r4D1eGaBk7c9imBQ0ci21-6SrUs/edit?gid=2142925416#gid=2142925416")
-
-NYPD_UOF <-
-    googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1eIc788a3e5XPDqvSvsxiy7_cBoChuq9KbJGR5p5TPI8/edit?gid=1706226357#gid=1706226357")
-
-
-### standardize the use of force datasets -- which subsets are we interested in?
-
-## clean dates and select just force characteristics + timing vars
-NYPD_UOF %<>% mutate(Date = 
-                          as.Date(paste0(substring(`Occurrence Date`,1,4),"-",
-                                          substring(`Occurrence Date`,6,7),"-",
-                                          substring(`Occurrence Date`,9,10)))) %>%
-  select(-YearMonthShort,-`Patrol Borough`)
-
-Austin_UOF %<>%
-  rename(Date=`Occurred Date`)
-
-Chicago_UOF %<>% mutate(Date=as.Date(INCIDENTDATETIME)) %>%
-  select(`REPORT NO`,Date,EVENT_NO,INVOLVED_PURSUIT, contains("DW"))
-
-Indianapolis_UOF %<>% mutate(Date = 
-                          as.Date(paste0(substring(OCCURRED_DT,1,4),"-",
-                                          substring(OCCURRED_DT,6,7),"-",
-                                          substring(OCCURRED_DT,9,10)))) %>%
-  select(OBJECTID,INCNUM,Date,DISPOSITION,contains("UOF"),CITCHARGE_TYPE)
-
-NOPD_UOF %<>% mutate(Date = 
-                          as.Date(paste0(substring(`Date Occurred`,1,4),"-",
-                                          substring(`Date Occurred`,6,7),"-",
-                                          substring(`Date Occurred`,9,10)))) %>%
-  select(`PIB File Number`, `Use of Force Type`, `Use of Force Effective`, `Use of Force Reason`, 
-         Disposition, `Service Type`, Date)
-
-phx_UOF %<>% mutate(Date=INC_DATE) %>% select(-contains("INC"),-contains("EMP"))
-
-Seattle_UOF %<>% mutate(Date = 
-                          as.Date(paste0(substring(Occured_date_time,1,4),"-",
-                                          substring(Occured_date_time,6,7),"-",
-                                          substring(Occured_date_time,9,10)))) %>%
-  select(ID,Incident_Num,Incident_Type,Date)
-
-Minneapolis_UOF %<>% mutate(Date =
-                              as.Date(paste0(substring(responseDate,1,4),"-",
-                                          substring(responseDate,6,7),"-",
-                                          substring(responseDate,9,10)))) %>%
-  select(caseNumber,problem,force,useOfForceID,forceType,Date)
+# ### import UOF datasets
+# phx_UOF <-
+#   googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
+#                             sheet="Phoenix_UOF_data")
+# 
+# Indianapolis_UOF <-
+#   googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
+#                             sheet="Indianapolis_UOF_data")
+# 
+# Minneapolis_UOF <-
+#   googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
+#                             sheet="Minneapolis_UOF_Data")
+# 
+# Seattle_UOF <-
+#   googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
+#                             sheet="Seattle_UOF")
+# 
+# Chicago_UOF <-
+#   googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
+#                             sheet="Chicago-UOF-2023")
+# 
+# NOPD_UOF <-
+#   googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
+#                             sheet="NOPD_Use_of_Force_Incidents")
+# 
+# 
+# Austin_UOF <-
+#     googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/14Rl9E8Nn5kj_ZYtN_Gh628JF-4eISpPBoR_FS_rVqOY/edit?gid=1964476816#gid=1964476816")
+# 
+# Chicago_UOF <-
+#     googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1bRyuIZbj3FRGMIS8r4D1eGaBk7c9imBQ0ci21-6SrUs/edit?gid=2142925416#gid=2142925416")
+# 
+# NYPD_UOF <-
+#     googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1eIc788a3e5XPDqvSvsxiy7_cBoChuq9KbJGR5p5TPI8/edit?gid=1706226357#gid=1706226357")
+# 
+# 
+# ### standardize the use of force datasets -- which subsets are we interested in?
+# 
+# ## clean dates and select just force characteristics + timing vars
+# NYPD_UOF %<>% mutate(Date = 
+#                           as.Date(paste0(substring(`Occurrence Date`,1,4),"-",
+#                                           substring(`Occurrence Date`,6,7),"-",
+#                                           substring(`Occurrence Date`,9,10)))) %>%
+#   select(-YearMonthShort,-`Patrol Borough`)
+# 
+# Austin_UOF %<>%
+#   rename(Date=`Occurred Date`)
+# 
+# Chicago_UOF %<>% mutate(Date=as.Date(INCIDENTDATETIME)) %>%
+#   select(`REPORT NO`,Date,EVENT_NO,INVOLVED_PURSUIT, contains("DW"))
+# 
+# Indianapolis_UOF %<>% mutate(Date = 
+#                           as.Date(paste0(substring(OCCURRED_DT,1,4),"-",
+#                                           substring(OCCURRED_DT,6,7),"-",
+#                                           substring(OCCURRED_DT,9,10)))) %>%
+#   select(OBJECTID,INCNUM,Date,DISPOSITION,contains("UOF"),CITCHARGE_TYPE)
+# 
+# NOPD_UOF %<>% mutate(Date = 
+#                           as.Date(paste0(substring(`Date Occurred`,1,4),"-",
+#                                           substring(`Date Occurred`,6,7),"-",
+#                                           substring(`Date Occurred`,9,10)))) %>%
+#   select(`PIB File Number`, `Use of Force Type`, `Use of Force Effective`, `Use of Force Reason`, 
+#          Disposition, `Service Type`, Date)
+# 
+# phx_UOF %<>% mutate(Date=INC_DATE) %>% select(-contains("INC"),-contains("EMP"))
+# 
+# Seattle_UOF %<>% mutate(Date = 
+#                           as.Date(paste0(substring(Occured_date_time,1,4),"-",
+#                                           substring(Occured_date_time,6,7),"-",
+#                                           substring(Occured_date_time,9,10)))) %>%
+#   select(ID,Incident_Num,Incident_Type,Date)
+# 
+# Minneapolis_UOF %<>% mutate(Date =
+#                               as.Date(paste0(substring(responseDate,1,4),"-",
+#                                           substring(responseDate,6,7),"-",
+#                                           substring(responseDate,9,10)))) %>%
+#   select(caseNumber,problem,force,useOfForceID,forceType,Date)
+# 
+# 
+# 
+# ### save as intermediate datasets
+# saveRDS(Minneapolis_UOF,"Minneapolis_UOF.RDS")
+# saveRDS(Austin_UOF,"Austin_UOF.RDS")
+# saveRDS(Chicago_UOF,"Chicago_UOF.RDS")
+# saveRDS(Indianapolis_UOF,"Indianapolis_UOF.RDS")
+# saveRDS(phx_UOF,"Phoenix_UOF.RDS")
+# saveRDS(NOPD_UOF,"NOPD_UOF.RDS")
+# saveRDS(Seattle_UOF,"Seattle_UOF.RDS")
+# saveRDS(NYPD_UOF,"NYPD_UOF.RDS")
 
 ```
 
 ## Exploratory figures
 
 ```{r, echo=FALSE}
+
+Minneapolis_UOF <- readRDS("Minneapolis_UOF.RDS")
+Austin_UOF <- readRDS("Austin_UOF.RDS")
+Chicago_UOF <- readRDS("Chicago_UOF.RDS")
+Indianapolis_UOF <- readRDS("Indianapolis_UOF.RDS")
+phx_UOF <- readRDS("Phoenix_UOF.RDS")
+NOPD_UOF <- readRDS("NOPD_UOF.RDS")
+Seattle_UOF <- readRDS("Seattle_UOF.RDS")
+NYPD_UOF <- readRDS("NYPD_UOF.RDS")
 
 ### unique cities in funeral data - make sure there are vars on UOF data to match.
 unique(funeraldat$City)
