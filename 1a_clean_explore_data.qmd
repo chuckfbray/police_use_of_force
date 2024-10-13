@@ -10,7 +10,7 @@ intro intro intro.
 
 ## Importing from Google Sheets and cleaning relevant variables
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, include=FALSE, message=FALSE, warning=FALSE}
 # install.packages("googlesheets4")
 # install.packages("summarytools")
 
@@ -25,17 +25,17 @@ library(summarytools)
 
 ### import funeral data from Google Sheet
 # (make sure default browser has Google account logged in)
-funeraldat <-
-  googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
-                            sheet="Funeral_data",
-                            range="A2:O28")
-
-# redefine binary variables as character factors; drop uninformative variables
-funeraldat %<>%
-  mutate(Inadvertent = factor(ifelse(Inadverdant==0,"No","Yes"))) %>%
-  select(-`Large police funeral?`)
-
-
+# funeraldat <-
+#   googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
+#                             sheet="Funeral_data",
+#                             range="A2:O28")
+# 
+# # redefine binary variables as character factors; drop uninformative variables
+# funeraldat %<>%
+#   mutate(Inadvertent = factor(ifelse(Inadverdant==0,"No","Yes"))) %>%
+#   select(-`Large police funeral?`)
+# 
+# 
 # ### import UOF datasets
 # phx_UOF <-
 #   googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
@@ -117,6 +117,8 @@ funeraldat %<>%
 # 
 # 
 # ### save as intermediate datasets
+# saveRDS(funeraldat,"funeraldat.RDS")
+# 
 # saveRDS(Minneapolis_UOF,"Minneapolis_UOF.RDS")
 # saveRDS(Austin_UOF,"Austin_UOF.RDS")
 # saveRDS(Chicago_UOF,"Chicago_UOF.RDS")
@@ -130,7 +132,10 @@ funeraldat %<>%
 
 ## Exploratory figures
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+## read in intermediate data
+funeraldat <- readRDS("funeraldat.RDS")
 
 Minneapolis_UOF <- readRDS("Minneapolis_UOF.RDS")
 Austin_UOF <- readRDS("Austin_UOF.RDS")
@@ -140,6 +145,7 @@ phx_UOF <- readRDS("Phoenix_UOF.RDS")
 NOPD_UOF <- readRDS("NOPD_UOF.RDS")
 Seattle_UOF <- readRDS("Seattle_UOF.RDS")
 NYPD_UOF <- readRDS("NYPD_UOF.RDS")
+
 
 ### unique cities in funeral data - make sure there are vars on UOF data to match.
 unique(funeraldat$City)
