@@ -6,133 +6,138 @@ editor: visual
 
 ## Project description
 
-intro intro intro.
-
-## Importing from Google Sheets and cleaning relevant variables
-
-```{r, echo=FALSE, include=FALSE, message=FALSE, warning=FALSE}
-# install.packages("googlesheets4")
-# install.packages("summarytools")
-
-# load key libraries
-library(dplyr)
-library(magrittr)
-library(lubridate)
-library(ggplot2)
-library(googlesheets4)
-library(summarytools)
+\[\[Intro\]\.
 
 
-### import funeral data from Google Sheet
-# (make sure default browser has Google account logged in)
-# funeraldat <-
-#   googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
-#                             sheet="Funeral_data",
-#                             range="A2:O28")
-# 
-# # redefine binary variables as character factors; drop uninformative variables
-# funeraldat %<>%
-#   mutate(Inadvertent = factor(ifelse(Inadverdant==0,"No","Yes"))) %>%
-#   select(-`Large police funeral?`)
-# 
-# 
-# ### import UOF datasets
-# phx_UOF <-
-#   googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
-#                             sheet="Phoenix_UOF_data")
-# 
-# Indianapolis_UOF <-
-#   googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
-#                             sheet="Indianapolis_UOF_data")
-# 
-# Minneapolis_UOF <-
-#   googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
-#                             sheet="Minneapolis_UOF_Data")
-# 
-# Seattle_UOF <-
-#   googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
-#                             sheet="Seattle_UOF")
-# 
-# Chicago_UOF <-
-#   googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
-#                             sheet="Chicago-UOF-2023")
-# 
-# NOPD_UOF <-
-#   googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
-#                             sheet="NOPD_Use_of_Force_Incidents")
-# 
-# 
-# Austin_UOF <-
-#     googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/14Rl9E8Nn5kj_ZYtN_Gh628JF-4eISpPBoR_FS_rVqOY/edit?gid=1964476816#gid=1964476816")
-# 
-# Chicago_UOF <-
-#     googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1bRyuIZbj3FRGMIS8r4D1eGaBk7c9imBQ0ci21-6SrUs/edit?gid=2142925416#gid=2142925416")
-# 
-# NYPD_UOF <-
-#     googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1eIc788a3e5XPDqvSvsxiy7_cBoChuq9KbJGR5p5TPI8/edit?gid=1706226357#gid=1706226357")
-# 
-# 
-# ### standardize the use of force datasets -- which subsets are we interested in?
-# 
-# ## clean dates and select just force characteristics + timing vars
-# NYPD_UOF %<>% mutate(Date = 
-#                           as.Date(paste0(substring(`Occurrence Date`,1,4),"-",
-#                                           substring(`Occurrence Date`,6,7),"-",
-#                                           substring(`Occurrence Date`,9,10)))) %>%
-#   select(-YearMonthShort,-`Patrol Borough`)
-# 
-# Austin_UOF %<>%
-#   rename(Date=`Occurred Date`)
-# 
-# Chicago_UOF %<>% mutate(Date=as.Date(INCIDENTDATETIME)) %>%
-#   select(`REPORT NO`,Date,EVENT_NO,INVOLVED_PURSUIT, contains("DW"))
-# 
-# Indianapolis_UOF %<>% mutate(Date = 
-#                           as.Date(paste0(substring(OCCURRED_DT,1,4),"-",
-#                                           substring(OCCURRED_DT,6,7),"-",
-#                                           substring(OCCURRED_DT,9,10)))) %>%
-#   select(OBJECTID,INCNUM,Date,DISPOSITION,contains("UOF"),CITCHARGE_TYPE)
-# 
-# NOPD_UOF %<>% mutate(Date = 
-#                           as.Date(paste0(substring(`Date Occurred`,1,4),"-",
-#                                           substring(`Date Occurred`,6,7),"-",
-#                                           substring(`Date Occurred`,9,10)))) %>%
-#   select(`PIB File Number`, `Use of Force Type`, `Use of Force Effective`, `Use of Force Reason`, 
-#          Disposition, `Service Type`, Date)
-# 
-# phx_UOF %<>% mutate(Date=INC_DATE) %>% select(-contains("INC"),-contains("EMP"))
-# 
-# Seattle_UOF %<>% mutate(Date = 
-#                           as.Date(paste0(substring(Occured_date_time,1,4),"-",
-#                                           substring(Occured_date_time,6,7),"-",
-#                                           substring(Occured_date_time,9,10)))) %>%
-#   select(ID,Incident_Num,Incident_Type,Date)
-# 
-# Minneapolis_UOF %<>% mutate(Date =
-#                               as.Date(paste0(substring(responseDate,1,4),"-",
-#                                           substring(responseDate,6,7),"-",
-#                                           substring(responseDate,9,10)))) %>%
-#   select(caseNumber,problem,force,useOfForceID,forceType,Date)
-# 
-# 
-# 
-# ### save as intermediate datasets
-# saveRDS(funeraldat,"funeraldat.RDS")
-# 
-# saveRDS(Minneapolis_UOF,"Minneapolis_UOF.RDS")
-# saveRDS(Austin_UOF,"Austin_UOF.RDS")
-# saveRDS(Chicago_UOF,"Chicago_UOF.RDS")
-# saveRDS(Indianapolis_UOF,"Indianapolis_UOF.RDS")
-# saveRDS(phx_UOF,"Phoenix_UOF.RDS")
-# saveRDS(NOPD_UOF,"NOPD_UOF.RDS")
-# saveRDS(Seattle_UOF,"Seattle_UOF.RDS")
-# saveRDS(NYPD_UOF,"NYPD_UOF.RDS")
+    ```{r, echo=FALSE, include=FALSE, message=FALSE, warning=FALSE}
+    # install.packages("googlesheets4")
+    # install.packages("summarytools")
 
-```
+    # load key libraries
+    library(broom)
+    library(dplyr)
+    library(magrittr)
+    library(lubridate)
+    library(ggplot2)
+    library(googlesheets4)
+    library(summarytools)
+
+
+    ### import funeral data from Google Sheet
+    # (make sure default browser has Google account logged in)
+    # funeraldat <-
+    #   googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
+    #                             sheet="Funeral_data",
+    #                             range="A2:O28")
+    # 
+    # # redefine binary variables as character factors; drop uninformative variables
+    # funeraldat %<>%
+    #   mutate(Inadvertent = factor(ifelse(Inadverdant==0,"No","Yes"))) %>%
+    #   select(-`Large police funeral?`)
+    # 
+    # 
+    # ### import UOF datasets
+    # phx_UOF <-
+    #   googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
+    #                             sheet="Phoenix_UOF_data")
+    # 
+    # Indianapolis_UOF <-
+    #   googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
+    #                             sheet="Indianapolis_UOF_data")
+    # 
+    # Minneapolis_UOF <-
+    #   googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
+    #                             sheet="Minneapolis_UOF_Data")
+    # 
+    # Seattle_UOF <-
+    #   googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
+    #                             sheet="Seattle_UOF")
+    # 
+    # Chicago_UOF <-
+    #   googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
+    #                             sheet="Chicago-UOF-2023")
+    # 
+    # NOPD_UOF <-
+    #   googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1AlG0GhTicxUbCPHj1ACeafNoXQ3mLu4AvDpUezS-X0k/edit?gid=0#gid=0",
+    #                             sheet="NOPD_Use_of_Force_Incidents")
+    # 
+    # 
+    # Austin_UOF <-
+    #     googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/14Rl9E8Nn5kj_ZYtN_Gh628JF-4eISpPBoR_FS_rVqOY/edit?gid=1964476816#gid=1964476816")
+    # 
+    # Chicago_UOF <-
+    #     googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1bRyuIZbj3FRGMIS8r4D1eGaBk7c9imBQ0ci21-6SrUs/edit?gid=2142925416#gid=2142925416")
+    # 
+    # NYPD_UOF <-
+    #     googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1eIc788a3e5XPDqvSvsxiy7_cBoChuq9KbJGR5p5TPI8/edit?gid=1706226357#gid=1706226357")
+    # 
+    # 
+    # ### standardize the use of force datasets -- which subsets are we interested in?
+    # 
+    # ## clean dates and select just force characteristics + timing vars
+    # NYPD_UOF %<>% mutate(Date = 
+    #                           as.Date(paste0(substring(`Occurrence Date`,1,4),"-",
+    #                                           substring(`Occurrence Date`,6,7),"-",
+    #                                           substring(`Occurrence Date`,9,10)))) %>%
+    #   select(-YearMonthShort,-`Patrol Borough`)
+    # 
+    # Austin_UOF %<>%
+    #   rename(Date=`Occurred Date`)
+    # 
+    # Chicago_UOF %<>% mutate(Date=as.Date(INCIDENTDATETIME)) %>%
+    #   select(`REPORT NO`,Date,EVENT_NO,INVOLVED_PURSUIT, contains("DW"))
+    # 
+    # Indianapolis_UOF %<>% mutate(Date = 
+    #                           as.Date(paste0(substring(OCCURRED_DT,1,4),"-",
+    #                                           substring(OCCURRED_DT,6,7),"-",
+    #                                           substring(OCCURRED_DT,9,10)))) %>%
+    #   select(OBJECTID,INCNUM,Date,DISPOSITION,contains("UOF"),CITCHARGE_TYPE)
+    # 
+    # NOPD_UOF %<>% mutate(Date = 
+    #                           as.Date(paste0(substring(`Date Occurred`,1,4),"-",
+    #                                           substring(`Date Occurred`,6,7),"-",
+    #                                           substring(`Date Occurred`,9,10)))) %>%
+    #   select(`PIB File Number`, `Use of Force Type`, `Use of Force Effective`, `Use of Force Reason`, 
+    #          Disposition, `Service Type`, Date)
+    # 
+    # phx_UOF %<>% mutate(Date=INC_DATE) %>% select(-contains("INC"),-contains("EMP"))
+    # 
+    # Seattle_UOF %<>% mutate(Date = 
+    #                           as.Date(paste0(substring(Occured_date_time,1,4),"-",
+    #                                           substring(Occured_date_time,6,7),"-",
+    #                                           substring(Occured_date_time,9,10)))) %>%
+    #   select(ID,Incident_Num,Incident_Type,Date)
+    # 
+    # Minneapolis_UOF %<>% mutate(Date =
+    #                               as.Date(paste0(substring(responseDate,1,4),"-",
+    #                                           substring(responseDate,6,7),"-",
+    #                                           substring(responseDate,9,10)))) %>%
+    #   select(caseNumber,problem,force,useOfForceID,forceType,Date)
+    # 
+    # 
+    # 
+    # ### save as intermediate datasets
+    # saveRDS(funeraldat,"funeraldat.RDS")
+    # 
+    # saveRDS(Minneapolis_UOF,"Minneapolis_UOF.RDS")
+    # saveRDS(Austin_UOF,"Austin_UOF.RDS")
+    # saveRDS(Chicago_UOF,"Chicago_UOF.RDS")
+    # saveRDS(Indianapolis_UOF,"Indianapolis_UOF.RDS")
+    # saveRDS(phx_UOF,"Phoenix_UOF.RDS")
+    # saveRDS(NOPD_UOF,"NOPD_UOF.RDS")
+    # saveRDS(Seattle_UOF,"Seattle_UOF.RDS")
+    # saveRDS(NYPD_UOF,"NYPD_UOF.RDS")
+
+    ```
+
+
 
 ## Exploratory figures
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
+#| layout-ncol: 2
+#| layout-nrow: 2
+
 
 ## read in intermediate data
 funeraldat <- readRDS("funeraldat.RDS")
@@ -148,7 +153,7 @@ NYPD_UOF <- readRDS("NYPD_UOF.RDS")
 
 
 ### unique cities in funeral data - make sure there are vars on UOF data to match.
-unique(funeraldat$City)
+# unique(funeraldat$City)
 
 
 ### make city name vars in UOF data & collapse city UOF counts by date
@@ -178,40 +183,141 @@ funeraldat_merged <-
         NYPD_UOF_clean,NOPD_UOF_clean)
 
 
-### limit to within 3 months of officer death and/or funeral date.
 funeraldat_merged %<>%
-  filter(abs(difftime(Date,`Date of death`,units="days"))<=90 |
-           abs(difftime(Date,`Date of funeral`,units="days"))<=90) %>%
   mutate(date_rel_death = difftime(Date,`Date of death`,units="days"),
-         date_rel_funeral = difftime(Date,`Date of funeral`,units="days"))
+         date_rel_funeral = difftime(Date,`Date of funeral`,units="days"),
+         relfuneral = factor(ifelse(abs(floor(date_rel_funeral/7))<9,
+                                    as.character(floor(date_rel_funeral/7)),
+                                    "Other weeks"),
+                             levels=c("-8","-7","-6","-5","-4","-3",
+                                      "-2","-1","0","1","2","3",
+                                      "4","5","6","7","8","Other weeks")),
+         reldeath = factor(ifelse(abs(floor(date_rel_death/7))<9,
+                                    as.character(floor(date_rel_death/7)),
+                                    "Other weeks"),
+                             levels=c("-8","-7","-6","-5","-4","-3",
+                                      "-2","-1","0","1","2","3",
+                                      "4","5","6","7","8","Other weeks")),
+         # month of year, year, from Date
+         Month = factor(month(Date)), Year=factor(year(Date)))
+
+
+### EXPAND: make sure every combination of date-City is accommodated, b/c of all the 0-incident days.
+DatesSince2014 <- c(seq.Date(from=Date("2014-01-01"), to=Date("2024-12-31")))
+
+[[xxx]]   THERE ARE NA Dates for new orleans, mpls, and indie --- why????
+
+[[xxx]]  De-dup dates, since in some cases multiple officers died.
+
+
+
+## relative weeks - are UOF normally distributed?  #####
+funeraldat_merged %>%
+  filter(abs(date_rel_death)<=180) %>%
+  group_by(Date,City) %>% summarize(uofs=n()) %>% ungroup() %>%
+  ggplot() +
+  geom_histogram(aes(x=uofs)) +
+    labs("Distribution of UOF incidents count\nby City-Date") +
+  ylab("Density") + xlab("Frequency of UOF count")
+
+  
+funeraldat_merged %>%
+  filter(abs(date_rel_funeral)<=180) %>%
+  group_by(Date,City) %>% summarize(uofs=n()) %>% ungroup() %>%
+  ggplot() +
+  geom_histogram(aes(x=uofs)) +
+    labs("Distribution of UOF incidents count\nby City-Date") +
+  ylab("Density") + xlab("Frequency of UOF count")
+
+
+
+## seasonal trends for UOF?  #####
+funeraldat_merged %>%
+  # year-month var
+  mutate(yearmonth = paste0(Year," ",Month)) %>%
+  group_by(yearmonth) %>% summarize(uofs=n()) %>% ungroup() %>%
+  ggplot(aes(x=yearmonth, y=uofs)) +
+  geom_col()
+
+
 
 ### raw counts over all cities for use of force, relative to that city's event(s)
 
-# relative days
+
+
+```
+
+## Relative event time absolute counts
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+#| layout-ncol: 2
+#| layout-nrow: 2
+
+## relative days  #####
+
+# relative to funeral
 funeraldat_merged %>%
-  ggplot(aes(x=date_rel_funeral, y=countUOF)) +
-  geom_col()
+  filter(abs(difftime(Date,`Date of funeral`,units="days"))<=60) %>%
+  mutate(`Day 0` = factor(ifelse(
+    date_rel_funeral==0,"Day of funeral","Other days"))) %>%
+  ggplot(aes(x=date_rel_funeral, y=countUOF, fill=`Day 0`)) +
+  geom_col() +
+  labs(guide="", title="Number of use of force incidents by day relative to police officer funeral") +
+  ylab("Number of use of force incidents") + xlab("Day relative to funeral")
 
+
+# relative to death
 funeraldat_merged %>%
-  ggplot(aes(x=date_rel_death, y=countUOF)) +
-  geom_col()
+  filter(abs(difftime(Date,`Date of death`,units="days"))<=60) %>%
+  mutate(`Day 0` = factor(ifelse(
+    date_rel_death==0,"Day of death","Other days"))) %>%
+  ggplot(aes(x=date_rel_death, y=countUOF, fill=`Day 0`)) +
+  geom_col() +
+  labs(guide="", title="Number of use of force incidents by day relative to police officer death") +
+  ylab("Number of use of force incidents") + xlab("Day relative to death")
 
 
-# relative weeks
+## relative weeks  #####
+
+# relative to funeral
 funeraldat_merged %>% mutate(date_rel_funeral=floor(date_rel_funeral/7)) %>%
-  ggplot(aes(x=date_rel_funeral, y=countUOF)) +
-  geom_col()
+  filter(abs(difftime(Date,`Date of funeral`,units="days"))<=60) %>%
+  mutate(`Week 0` = factor(ifelse(
+    date_rel_funeral==0,"Week of funeral","Other weeks"))) %>%
+  ggplot(aes(x=date_rel_funeral, y=countUOF, fill=`Week 0`)) +
+  geom_col() +
+  labs(guide="", title="Number of use of force incidents by week relative to police officer funeral") +
+  ylab("Number of use of force incidents") + xlab("Week relative to funeral")
 
+# relative to death
 funeraldat_merged %>% mutate(date_rel_death=floor(date_rel_death/7)) %>%
-  ggplot(aes(x=date_rel_death, y=countUOF)) +
-  geom_col()
+  filter(abs(difftime(Date,`Date of death`,units="days"))<=60) %>%
+  mutate(`Week 0` = factor(ifelse(
+    date_rel_death==0,"Week of death","Other weeks"))) %>%
+  ggplot(aes(x=date_rel_death, y=countUOF, fill=`Week 0`)) +
+  geom_col() +
+  labs(guide="", title="Number of use of force incidents by day relative to police officer death") +
+  ylab("Number of use of force incidents") + xlab("Week relative to death")
 
 
 ```
 
 ## Regression models
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+## create relative 8 weeks and "other" weeks and other useful covariates
+funeraldat_merged %<>% 
+  mutate(date_rel_death=floor(date_rel_death/7),
+         date_rel_funeral=floor(date_rel_funeral/7))
+
+
+regdat <- funeraldat_merged %>% group_by(Date,Month,City,reldeath,relfuneral) %>%
+  summarize(incs=n()) %>% ungroup()
+  
+
+tidy(glm(incs~reldeath + City + Month, data=regdat))
+tidy(glm(incs~relfuneral + City + Month, data=regdat))
 
 
 ```
